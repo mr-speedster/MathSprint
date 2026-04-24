@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathSprint — Sharpen Your Calculations</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0c10;
+    --surface: #13141a;
+    --surface2: #1c1e27;
+    --border: #2a2d3a;
+    --accent: #f0c040;
+    --accent2: #4ecca3;
+    --accent3: #ff6b6b;
+    --accent4: #7b8cde;
+    --text: #e8eaf0;
+    --text-muted: #6b7080;
+    --text-dim: #9299aa;
+    --correct: #4ecca3;
+    --wrong: #ff6b6b;
+    --radius: 16px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(240,192,64,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,192,64,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(240,192,64,0.07) 0%, transparent 70%);
+    top: -200px;
+    right: -200px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 32px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+  }
+
+  .logo-text {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: var(--accent); }
+
+  .tagline {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 60px 0 40px;
+    text-align: center;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(240,192,64,0.1);
+    border: 1px solid rgba(240,192,64,0.25);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+    margin-bottom: 24px;
+    letter-spacing: 0.05em;
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+    font-family: 'Instrument Serif', serif;
+  }
+
+  .hero p {
+    font-size: 16px;
+    color: var(--text-dim);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── SETUP SCREEN ── */
+  .setup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 40px;
+  }
+
+  @media (max-width: 600px) {
+    .setup-grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover { border-color: rgba(240,192,64,0.3); }
+
+  .card-label {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+  }
+
+  .card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .card p {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* Mode cards */
+  .mode-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 40px;
+  }
+
+  @media (max-width: 600px) {
+    .mode-cards { grid-template-columns: 1fr; }
+  }
+
+  .mode-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mode-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .mode-card.single::before { background: linear-gradient(135deg, rgba(240,192,64,0.06) 0%, transparent 60%); }
+  .mode-card.mixed::before { background: linear-gradient(135deg, rgba(78,204,163,0.06) 0%, transparent 60%); }
+
+  .mode-card:hover { transform: translateY(-3px); }
+  .mode-card:hover::before { opacity: 1; }
+  .mode-card.selected.single { border-color: var(--accent); background: rgba(240,192,64,0.07); }
+  .mode-card.selected.mixed { border-color: var(--accent2); background: rgba(78,204,163,0.07); }
+
+  .mode-icon {
+    font-size: 36px;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .mode-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .mode-card.single h3 { color: var(--accent); }
+  .mode-card.mixed h3 { color: var(--accent2); }
+
+  .mode-card p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .check-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+
+  .mode-card.selected.single .check-badge { display: flex; background: var(--accent); color: #000; }
+  .mode-card.selected.mixed .check-badge { display: flex; background: var(--accent2); color: #000; }
+
+  /* Operation selector */
+  .ops-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  @media (max-width: 500px) {
+    .ops-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .op-btn {
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px 8px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    color: var(--text-dim);
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .op-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .op-btn.selected { border-color: var(--accent); background: rgba(240,192,64,0.12); color: var(--accent); }
+  .op-btn .op-label { display: block; font-size: 10px; margin-top: 4px; letter-spacing: 0.05em; text-transform: uppercase; font-family: 'Syne', sans-serif; font-weight: 600; }
+
+  /* Number selector */
+  .qty-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    width: fit-content;
+  }
+
+  .qty-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .qty-chip {
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+  }
+
+  .qty-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .qty-chip.selected { border-color: var(--accent); background: rgba(240,192,64,0.12); color: var(--accent); }
+
+  /* Section label */
+  .section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+    margin-top: 32px;
+  }
+
+  /* Start button */
+  .btn-start {
+    display: block;
+    width: 100%;
+    margin-top: 36px;
+    padding: 18px;
+    background: var(--accent);
+    color: #0b0c10;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-start:hover { background: #f5d060; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(240,192,64,0.25); }
+  .btn-start:active { transform: translateY(0); }
+  .btn-start:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ── GAME SCREEN ── */
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 0 0;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .game-meta {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .meta-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .meta-pill strong { color: var(--text); font-weight: 500; }
+
+  .timer-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+
+  .progress-bar-wrap {
+    margin-top: 20px;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 100px;
+    transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Main question area */
+  .question-wrap {
+    margin-top: 48px;
+    text-align: center;
+    position: relative;
+  }
+
+  .q-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .question-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px 40px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  .question-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    opacity: 0.6;
+  }
+
+  .question-box.correct { border-color: var(--correct); background: rgba(78,204,163,0.06); }
+  .question-box.wrong { border-color: var(--wrong); background: rgba(255,107,107,0.06); }
+
+  .op-tag {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    background: var(--surface2);
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  .expression {
+    font-size: clamp(48px, 10vw, 88px);
+    font-weight: 800;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: -3px;
+    line-height: 1;
+    color: var(--text);
+    margin-bottom: 40px;
+  }
+
+  .expression .op-char {
+    color: var(--accent);
+    margin: 0 12px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 300;
+  }
+
+  .answer-input-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  .answer-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text);
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    -moz-appearance: textfield;
+  }
+
+  .answer-input::-webkit-inner-spin-button,
+  .answer-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  .answer-input:focus { border-color: var(--accent); }
+  .answer-input.correct { border-color: var(--correct); background: rgba(78,204,163,0.1); }
+  .answer-input.wrong { border-color: var(--wrong); background: rgba(255,107,107,0.1); }
+
+  .btn-check {
+    background: var(--accent);
+    color: #0b0c10;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 14px 22px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .btn-check:hover { background: #f5d060; }
+
+  .feedback-msg {
+    margin-top: 20px;
+    min-height: 32px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    transition: all 0.3s;
+  }
+
+  .feedback-msg.correct { color: var(--correct); }
+  .feedback-msg.wrong { color: var(--wrong); }
+
+  /* Skip */
+  .skip-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-top: 24px;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .skip-btn:hover { border-color: var(--text-muted); color: var(--text-dim); }
+
+  /* Mini history */
+  .mini-history {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+
+  .hist-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .hist-dot.correct { background: var(--correct); }
+  .hist-dot.wrong { background: var(--wrong); }
+  .hist-dot.current { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+  /* ── RESULTS SCREEN ── */
+  .results-header {
+    padding: 48px 0 32px;
+    text-align: center;
+  }
+
+  .results-title {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+  }
+
+  .results-subtitle {
+    font-size: 15px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .score-ring-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 32px 0;
+  }
+
+  .score-ring {
+    position: relative;
+    width: 160px;
+    height: 160px;
+  }
+
+  .score-ring svg {
+    transform: rotate(-90deg);
+    position: absolute;
+    inset: 0;
+  }
+
+  .score-ring-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .score-pct {
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 24px 0 32px;
+  }
+
+  @media (max-width: 600px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 18px 14px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .stat-card.good .stat-val { color: var(--correct); }
+  .stat-card.bad .stat-val { color: var(--wrong); }
+  .stat-card.time .stat-val { color: var(--accent); }
+  .stat-card.avg .stat-val { color: var(--accent4); }
+
+  /* Per-question breakdown */
+  .breakdown-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .breakdown-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+  }
+
+  .breakdown-row .q-idx {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    min-width: 24px;
+  }
+
+  .breakdown-row .q-expr {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+    flex: 1;
+    color: var(--text);
+  }
+
+  .breakdown-row .q-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .breakdown-row .q-status {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+
+  .breakdown-row .q-status.correct { background: rgba(78,204,163,0.15); color: var(--correct); }
+  .breakdown-row .q-status.wrong { background: rgba(255,107,107,0.15); color: var(--wrong); }
+  .breakdown-row .q-status.skipped { background: rgba(107,112,128,0.15); color: var(--text-muted); }
+
+  .breakdown-row .q-answer {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* Efficiency bar chart */
+  .op-bars { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+
+  .op-bar-row { display: flex; align-items: center; gap: 14px; }
+  .op-bar-name { font-family: 'DM Mono', monospace; font-size: 22px; min-width: 30px; text-align: center; }
+  .op-bar-track { flex: 1; height: 10px; background: var(--surface2); border-radius: 100px; overflow: hidden; }
+  .op-bar-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width 1s ease; }
+  .op-bar-pct { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text-dim); min-width: 42px; text-align: right; }
+
+  /* Rating badge */
+  .rating-badge {
+    text-align: center;
+    margin: 24px 0 32px;
+  }
+
+  .rating-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    border-radius: 100px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    border: 2px solid;
+  }
+
+  .rating-S { border-color: #ffd700; color: #ffd700; background: rgba(255,215,0,0.08); }
+  .rating-A { border-color: var(--correct); color: var(--correct); background: rgba(78,204,163,0.08); }
+  .rating-B { border-color: var(--accent4); color: var(--accent4); background: rgba(123,140,222,0.08); }
+  .rating-C { border-color: var(--accent); color: var(--accent); background: rgba(240,192,64,0.08); }
+  .rating-D { border-color: var(--wrong); color: var(--wrong); background: rgba(255,107,107,0.08); }
+
+  /* Action buttons */
+  .result-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 60px;
+  }
+
+  .btn-secondary {
+    flex: 1;
+    padding: 16px;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .btn-secondary:hover { border-color: var(--text-dim); }
+
+  .btn-primary {
+    flex: 1;
+    padding: 16px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0b0c10;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .btn-primary:hover { background: #f5d060; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(240,192,64,0.2); }
+
+  /* Animations */
+  @keyframes popIn {
+    0% { transform: scale(0.85); opacity: 0; }
+    60% { transform: scale(1.04); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes fadeSlideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .animate-pop { animation: popIn 0.4s cubic-bezier(0.4,0,0.2,1) forwards; }
+  .animate-up { animation: fadeSlideUp 0.4s ease forwards; }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-family: 'DM Mono', monospace;
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    white-space: nowrap;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Confetti canvas */
+  #confetti-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<div class="container">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">∑</div>
+      <div>
+        <div class="logo-text">Math<span>Sprint</span></div>
+        <div class="tagline">Mental Math Trainer</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════ SETUP SCREEN ══════════════ -->
+  <div id="screen-setup" class="screen active">
+    <div class="hero">
+      <div class="hero-badge">✦ Level up your mental math</div>
+      <h1>Train Your Brain,<br>Master <em>Calculations</em></h1>
+      <p>Choose your mode, set your challenge, and build lightning-fast mental arithmetic skills.</p>
+    </div>
+
+    <div class="section-label">01 — Choose Mode</div>
+    <div class="mode-cards">
+      <div class="mode-card single" id="mode-single" onclick="selectMode('single')">
+        <div class="check-badge">✓</div>
+        <span class="mode-icon">🎯</span>
+        <h3>Single Operation</h3>
+        <p>Focus on one operation and master it with targeted practice</p>
+      </div>
+      <div class="mode-card mixed" id="mode-mixed" onclick="selectMode('mixed')">
+        <div class="check-badge">✓</div>
+        <span class="mode-icon">🌀</span>
+        <h3>Mixed Mode</h3>
+        <p>Random operations to challenge your mental agility</p>
+      </div>
+    </div>
+
+    <div id="op-section" style="display:none">
+      <div class="section-label" style="margin-top:28px">02 — Select Operation</div>
+      <div class="ops-grid">
+        <div class="op-btn" id="op-+" onclick="selectOp('+')">
+          +
+          <span class="op-label">Add</span>
+        </div>
+        <div class="op-btn" id="op--" onclick="selectOp('-')">
+          −
+          <span class="op-label">Sub</span>
+        </div>
+        <div class="op-btn" id="op-*" onclick="selectOp('*')">
+          ×
+          <span class="op-label">Mul</span>
+        </div>
+        <div class="op-btn" id="op-/" onclick="selectOp('/')">
+          ÷
+          <span class="op-label">Div</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label" id="qty-label">02 — Number of Questions</div>
+    <div class="qty-options">
+      <div class="qty-chip" onclick="selectQty(5)">5</div>
+      <div class="qty-chip" onclick="selectQty(10)">10</div>
+      <div class="qty-chip selected" onclick="selectQty(20)">20</div>
+      <div class="qty-chip" onclick="selectQty(30)">30</div>
+      <div class="qty-chip" onclick="selectQty(50)">50</div>
+    </div>
+
+    <button class="btn-start" id="btn-start" onclick="startGame()" disabled>
+      Start Sprint →
+    </button>
+  </div>
+
+  <!-- ══════════════ GAME SCREEN ══════════════ -->
+  <div id="screen-game" class="screen">
+    <div class="game-header">
+      <div class="game-meta">
+        <div class="meta-pill">Q <strong id="q-counter">1</strong> of <strong id="q-total">20</strong></div>
+        <div class="meta-pill" id="mode-pill">Mode</div>
+      </div>
+      <div class="timer-display" id="timer">00:00</div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+
+    <div class="question-wrap">
+      <div class="q-number" id="q-number-label">Question 1</div>
+      <div class="question-box" id="question-box">
+        <div class="op-tag" id="op-tag">Addition</div>
+        <div class="expression" id="expression">
+          <span id="num1">12</span>
+          <span class="op-char" id="op-char">+</span>
+          <span id="num2">34</span>
+        </div>
+        <div class="answer-input-row">
+          <input type="number" class="answer-input" id="answer-input" placeholder="?" autocomplete="off" onkeydown="handleKey(event)">
+          <button class="btn-check" id="btn-check" onclick="checkAnswer()">Check</button>
+        </div>
+        <div class="feedback-msg" id="feedback-msg"></div>
+      </div>
+      <button class="skip-btn" id="skip-btn" onclick="skipQuestion()">Skip →</button>
+      <div class="mini-history" id="mini-history"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ RESULTS SCREEN ══════════════ -->
+  <div id="screen-results" class="screen">
+    <div class="results-header">
+      <div class="results-title" id="results-title">Sprint Complete!</div>
+      <div class="results-subtitle" id="results-subtitle">Here's how you did</div>
+    </div>
+
+    <div class="rating-badge">
+      <div class="rating-pill" id="rating-pill">S</div>
+    </div>
+
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r="66" fill="none" stroke="#1c1e27" stroke-width="12"/>
+          <circle cx="80" cy="80" r="66" fill="none" stroke="url(#ring-grad)" stroke-width="12"
+            stroke-linecap="round" stroke-dasharray="414.69" id="ring-dash" stroke-dashoffset="414.69"/>
+          <defs>
+            <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#f0c040"/>
+              <stop offset="100%" stop-color="#4ecca3"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-ring-inner">
+          <div class="score-pct" id="score-pct">0%</div>
+          <div class="score-label">Accuracy</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card good">
+        <div class="stat-val" id="stat-correct">0</div>
+        <div class="stat-label">Correct</div>
+      </div>
+      <div class="stat-card bad">
+        <div class="stat-val" id="stat-wrong">0</div>
+        <div class="stat-label">Wrong</div>
+      </div>
+      <div class="stat-card time">
+        <div class="stat-val" id="stat-time">0s</div>
+        <div class="stat-label">Total Time</div>
+      </div>
+      <div class="stat-card avg">
+        <div class="stat-val" id="stat-avg">0s</div>
+        <div class="stat-label">Avg / Q</div>
+      </div>
+    </div>
+
+    <!-- Op bars -->
+    <div class="breakdown-title">Performance by Operation</div>
+    <div class="op-bars" id="op-bars"></div>
+
+    <div class="divider"></div>
+
+    <div class="breakdown-title">Question Breakdown</div>
+    <div class="breakdown-list" id="breakdown-list"></div>
+
+    <div class="result-actions">
+      <button class="btn-secondary" onclick="goSetup()">Change Settings</button>
+      <button class="btn-primary" onclick="restartGame()">Play Again →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════ STATE ══════════════
+let state = {
+  mode: null,
+  op: null,
+  qty: 20,
+  questions: [],
+  current: 0,
+  results: [],
+  startTime: null,
+  qStartTime: null,
+  timerInterval: null,
+  answered: false,
+  totalElapsed: 0,
+};
+
+const OPS = ['+', '-', '*', '/'];
+const OP_NAMES = { '+': 'Addition', '-': 'Subtraction', '*': 'Multiplication', '/': 'Division' };
+const OP_SYMBOLS = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+
+// ══════════════ SETUP ══════════════
+function selectMode(m) {
+  state.mode = m;
+  document.getElementById('mode-single').classList.toggle('selected', m === 'single');
+  document.getElementById('mode-mixed').classList.toggle('selected', m === 'mixed');
+  const opSection = document.getElementById('op-section');
+  const qtyLabel = document.getElementById('qty-label');
+  if (m === 'single') {
+    opSection.style.display = 'block';
+    qtyLabel.textContent = '03 — Number of Questions';
+  } else {
+    opSection.style.display = 'none';
+    qtyLabel.textContent = '02 — Number of Questions';
+    state.op = null;
+    document.querySelectorAll('.op-btn').forEach(b => b.classList.remove('selected'));
+  }
+  validateSetup();
+}
+
+function selectOp(op) {
+  state.op = op;
+  document.querySelectorAll('.op-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('op-' + op).classList.add('selected');
+  validateSetup();
+}
+
+function selectQty(n) {
+  state.qty = n;
+  document.querySelectorAll('.qty-chip').forEach(c => c.classList.remove('selected'));
+  event.target.classList.add('selected');
+  validateSetup();
+}
+
+function validateSetup() {
+  const ok = state.mode && (state.mode === 'mixed' || state.op);
+  document.getElementById('btn-start').disabled = !ok;
+}
+
+// ══════════════ QUESTION GENERATION ══════════════
+function genDivision() {
+  const divisors = [2,3,4,5,6,7,8,9,10];
+  const d = divisors[Math.floor(Math.random() * divisors.length)];
+  const maxQ = Math.floor(99 / d);
+  const q = Math.floor(Math.random() * maxQ) + 1;
+  return { a: q * d, b: d, ans: q };
+}
+
+function genQuestion(op) {
+  if (op === '/') {
+    const { a, b, ans } = genDivision();
+    return { a, b, op, ans };
+  }
+  let a = Math.floor(Math.random() * 99) + 1;
+  let b = Math.floor(Math.random() * 99) + 1;
+  let ans;
+  if (op === '-') {
+    if (b > a) [a, b] = [b, a]; // ensure non-negative
+    ans = a - b;
+  } else if (op === '+') {
+    ans = a + b;
+  } else {
+    // multiplication: keep numbers reasonable
+    a = Math.floor(Math.random() * 12) + 1;
+    b = Math.floor(Math.random() * 12) + 1;
+    ans = a * b;
+  }
+  return { a, b, op, ans };
+}
+
+function generateQuestions() {
+  const qs = [];
+  for (let i = 0; i < state.qty; i++) {
+    const op = state.mode === 'mixed'
+      ? OPS[Math.floor(Math.random() * OPS.length)]
+      : state.op;
+    qs.push(genQuestion(op));
+  }
+  return qs;
+}
+
+// ══════════════ GAME FLOW ══════════════
+function startGame() {
+  state.questions = generateQuestions();
+  state.current = 0;
+  state.results = [];
+  state.answered = false;
+  state.totalElapsed = 0;
+
+  showScreen('game');
+
+  // Setup UI
+  document.getElementById('q-total').textContent = state.qty;
+  document.getElementById('mode-pill').textContent = state.mode === 'mixed' ? '🌀 Mixed' : `🎯 ${OP_NAMES[state.op]}`;
+
+  // History dots
+  const hist = document.getElementById('mini-history');
+  hist.innerHTML = '';
+  for (let i = 0; i < state.qty; i++) {
+    const d = document.createElement('div');
+    d.className = 'hist-dot' + (i === 0 ? ' current' : '');
+    d.id = `dot-${i}`;
+    hist.appendChild(d);
+  }
+
+  startTimer();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = state.questions[state.current];
+  state.answered = false;
+  state.qStartTime = Date.now();
+
+  // Update counters
+  document.getElementById('q-counter').textContent = state.current + 1;
+  document.getElementById('q-number-label').textContent = `Question ${state.current + 1} of ${state.qty}`;
+
+  // Update expression
+  document.getElementById('num1').textContent = q.a;
+  document.getElementById('op-char').textContent = OP_SYMBOLS[q.op];
+  document.getElementById('num2').textContent = q.b;
+  document.getElementById('op-tag').textContent = OP_NAMES[q.op];
+
+  // Reset input & box
+  const inp = document.getElementById('answer-input');
+  inp.value = '';
+  inp.className = 'answer-input';
+  inp.disabled = false;
+  inp.focus();
+
+  const box = document.getElementById('question-box');
+  box.className = 'question-box animate-pop';
+
+  document.getElementById('feedback-msg').textContent = '';
+  document.getElementById('feedback-msg').className = 'feedback-msg';
+  document.getElementById('btn-check').disabled = false;
+  document.getElementById('skip-btn').style.display = '';
+
+  // Progress
+  const pct = (state.current / state.qty) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function checkAnswer() {
+  if (state.answered) return;
+
+  const inp = document.getElementById('answer-input');
+  const val = inp.value.trim();
+  if (val === '' || isNaN(val)) { showToast('Enter a number first!'); return; }
+
+  const userAns = parseInt(val, 10);
+  const q = state.questions[state.current];
+  const timeTaken = (Date.now() - state.qStartTime) / 1000;
+  const correct = userAns === q.ans;
+
+  state.answered = true;
+  state.results.push({ q, userAns, correct, timeTaken, skipped: false });
+
+  // Visual feedback
+  const box = document.getElementById('question-box');
+  const msg = document.getElementById('feedback-msg');
+  const dot = document.getElementById(`dot-${state.current}`);
+
+  if (correct) {
+    box.classList.add('correct');
+    inp.classList.add('correct');
+    msg.textContent = '✓ Correct! ' + q.a + ' ' + OP_SYMBOLS[q.op] + ' ' + q.b + ' = ' + q.ans;
+    msg.className = 'feedback-msg correct';
+    dot.className = 'hist-dot correct';
+  } else {
+    box.classList.add('wrong');
+    inp.classList.add('wrong');
+    msg.textContent = '✗ Wrong. Answer was ' + q.ans;
+    msg.className = 'feedback-msg wrong';
+    dot.className = 'hist-dot wrong';
+  }
+
+  inp.disabled = true;
+  document.getElementById('btn-check').disabled = true;
+  document.getElementById('skip-btn').style.display = 'none';
+
+  setTimeout(() => nextQuestion(), correct ? 900 : 1400);
+}
+
+function skipQuestion() {
+  if (state.answered) return;
+  const q = state.questions[state.current];
+  const timeTaken = (Date.now() - state.qStartTime) / 1000;
+  state.results.push({ q, userAns: null, correct: false, timeTaken, skipped: true });
+
+  const dot = document.getElementById(`dot-${state.current}`);
+  dot.className = 'hist-dot wrong';
+  document.getElementById('feedback-msg').textContent = 'Skipped. Answer was ' + q.ans;
+  document.getElementById('feedback-msg').className = 'feedback-msg wrong';
+
+  state.answered = true;
+  setTimeout(() => nextQuestion(), 600);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter') checkAnswer();
+}
+
+function nextQuestion() {
+  // Advance dot
+  if (state.current + 1 < state.qty) {
+    const nextDot = document.getElementById(`dot-${state.current + 1}`);
+    if (nextDot) nextDot.classList.add('current');
+  }
+
+  state.current++;
+  if (state.current >= state.qty) {
+    endGame();
+  } else {
+    renderQuestion();
+  }
+}
+
+function endGame() {
+  stopTimer();
+  state.totalElapsed = (Date.now() - state.startTime) / 1000;
+  showResults();
+}
+
+// ══════════════ TIMER ══════════════
+function startTimer() {
+  state.startTime = Date.now();
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(updateTimer, 500);
+}
+
+function stopTimer() {
+  clearInterval(state.timerInterval);
+}
+
+function updateTimer() {
+  const elapsed = (Date.now() - state.startTime) / 1000;
+  const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+  const s = Math.floor(elapsed % 60).toString().padStart(2, '0');
+  document.getElementById('timer').textContent = m + ':' + s;
+}
+
+// ══════════════ RESULTS ══════════════
+function showResults() {
+  showScreen('results');
+
+  const correct = state.results.filter(r => r.correct).length;
+  const wrong = state.results.filter(r => !r.correct && !r.skipped).length;
+  const skipped = state.results.filter(r => r.skipped).length;
+  const total = state.qty;
+  const accuracy = Math.round((correct / total) * 100);
+  const totalSec = state.totalElapsed;
+  const avgSec = (totalSec / total).toFixed(1);
+
+  // Rating
+  let rating, ratingLabel;
+  if (accuracy >= 95) { rating = 'S'; ratingLabel = '🏆 Exceptional'; }
+  else if (accuracy >= 85) { rating = 'A'; ratingLabel = '⭐ Excellent'; }
+  else if (accuracy >= 70) { rating = 'B'; ratingLabel = '👍 Good'; }
+  else if (accuracy >= 55) { rating = 'C'; ratingLabel = '📈 Average'; }
+  else { rating = 'D'; ratingLabel = '💪 Keep Practicing'; }
+
+  const pill = document.getElementById('rating-pill');
+  pill.className = 'rating-pill rating-' + rating;
+  pill.textContent = rating + ' — ' + ratingLabel;
+
+  // Scores
+  document.getElementById('results-title').textContent = accuracy >= 80 ? '🎉 Sprint Complete!' : 'Sprint Complete!';
+  document.getElementById('results-subtitle').textContent = `${accuracy}% accuracy · ${state.mode === 'mixed' ? 'Mixed Mode' : OP_NAMES[state.op]}`;
+
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-wrong').textContent = wrong + (skipped ? ` (+${skipped} skip)` : '');
+  document.getElementById('stat-time').textContent = formatTime(totalSec);
+  document.getElementById('stat-avg').textContent = avgSec + 's';
+
+  // Ring animation
+  const circumference = 414.69;
+  const offset = circumference - (accuracy / 100) * circumference;
+  const ring = document.getElementById('ring-dash');
+  setTimeout(() => {
+    ring.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)';
+    ring.style.strokeDashoffset = offset;
+  }, 300);
+
+  // Animate score counter
+  animateCounter('score-pct', 0, accuracy, 1200, '%');
+
+  // Op bars
+  const opBarsEl = document.getElementById('op-bars');
+  opBarsEl.innerHTML = '';
+  const opsUsed = {};
+  state.results.forEach(r => {
+    const o = r.q.op;
+    if (!opsUsed[o]) opsUsed[o] = { correct: 0, total: 0 };
+    opsUsed[o].total++;
+    if (r.correct) opsUsed[o].correct++;
+  });
+
+  Object.entries(opsUsed).forEach(([op, dat]) => {
+    const pct = Math.round((dat.correct / dat.total) * 100);
+    opBarsEl.innerHTML += `
+      <div class="op-bar-row">
+        <div class="op-bar-name">${OP_SYMBOLS[op]}</div>
+        <div class="op-bar-track"><div class="op-bar-fill" style="width:0%" data-pct="${pct}"></div></div>
+        <div class="op-bar-pct">${pct}%</div>
+      </div>`;
+  });
+
+  setTimeout(() => {
+    document.querySelectorAll('.op-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.pct + '%';
+    });
+  }, 400);
+
+  // Breakdown
+  const breakdownEl = document.getElementById('breakdown-list');
+  breakdownEl.innerHTML = '';
+  state.results.forEach((r, i) => {
+    const status = r.skipped ? 'skipped' : (r.correct ? 'correct' : 'wrong');
+    const statusLabel = r.skipped ? 'Skip' : (r.correct ? '✓' : '✗');
+    const ansDisplay = r.skipped
+      ? `Ans: ${r.q.ans}`
+      : (r.correct ? '' : `You: ${r.userAns} · Ans: ${r.q.ans}`);
+    breakdownEl.innerHTML += `
+      <div class="breakdown-row animate-up" style="animation-delay:${i * 30}ms">
+        <span class="q-idx">#${i+1}</span>
+        <span class="q-expr">${r.q.a} ${OP_SYMBOLS[r.q.op]} ${r.q.b}</span>
+        <span class="q-answer">${ansDisplay}</span>
+        <span class="q-time">${r.timeTaken.toFixed(1)}s</span>
+        <span class="q-status ${status}">${statusLabel}</span>
+      </div>`;
+  });
+
+  // Confetti for high scores
+  if (accuracy >= 80) launchConfetti();
+}
+
+function formatTime(s) {
+  if (s < 60) return Math.round(s) + 's';
+  return Math.floor(s / 60) + 'm ' + Math.round(s % 60) + 's';
+}
+
+function animateCounter(id, from, to, duration, suffix = '') {
+  const el = document.getElementById(id);
+  const step = (to - from) / (duration / 16);
+  let current = from;
+  const tick = () => {
+    current = Math.min(current + step, to);
+    el.textContent = Math.round(current) + suffix;
+    if (current < to) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// ══════════════ CONFETTI ══════════════
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const colors = ['#f0c040', '#4ecca3', '#ff6b6b', '#7b8cde', '#fff'];
+  const particles = Array.from({ length: 120 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -20,
+    r: Math.random() * 6 + 3,
+    c: colors[Math.floor(Math.random() * colors.length)],
+    vx: (Math.random() - 0.5) * 4,
+    vy: Math.random() * 4 + 2,
+    rot: Math.random() * 360,
+    vrot: (Math.random() - 0.5) * 8,
+    alpha: 1,
+  }));
+
+  let frame = 0;
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vrot;
+      p.alpha -= 0.008;
+      if (p.alpha <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rot * Math.PI) / 180);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
+      ctx.restore();
+    });
+    frame++;
+    if (frame < 200) requestAnimationFrame(draw);
+    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  draw();
+}
+
+// ══════════════ NAVIGATION ══════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goSetup() {
+  stopTimer();
+  showScreen('setup');
+}
+
+function restartGame() {
+  startGame();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ══════════════ INIT ══════════════
+selectQty(20); // default
+</script>
+</body>
+</html>
